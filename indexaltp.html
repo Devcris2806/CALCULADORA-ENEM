@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      background-color: #fdc300;
+      color: #0018ff;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      color: #fdc300;
+    }
+
+    #cursoSelecao,
+    #calculadoraEnem {
+      background-color: #0018ff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      width: 300px;
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #fdc300;
+    }
+
+    select,
+    input {
+      width: calc(100% - 16px);
+      padding: 8px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      display: block;
+      margin: 0 auto;
+    }
+
+    button.btn-amarelo {
+      background-color: #ffcc00; /* Cor amarela */
+      color: #0018ff;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      margin: 10px auto; /* Adicionado para centralizar o botão */
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button.btn-amarelo:hover {
+      background-color: #f5ea27; /* Cor amarela mais clara no hover */
+      color: #0018ff; /* Cor azul */
+    }
+
+    #loading {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid #fdc300;
+      width: 30px;
+      height: 30px;
+      margin: 0 auto 15px;
+      animation: spin 2s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #resultadoMensalidade {
+      font-weight: bold;
+      margin-top: 10px;
+      color: #fdc300;
+    }
+  </style>
+  <title>Calculadora ENEM</title>
+</head>
+<body>
+  <div class="container text-center mt-5">
+    <h1>Calculadora ENEM</h1>
+    <div id="cursoSelecao" class="mb-4">
+      <label for="cursos">Escolha o curso:</label>
+      <select id="cursos" class="form-control">
+        <!-- Opção vazia como placeholder -->
+        <option disabled selected hidden>Selecione o curso desejado</option>
+        <!-- Adicione as opções dos cursos aqui -->
+      </select>
+    </div>
+    <div id="calculadoraEnem" style="display: none;">
+      <label for="notaEnem">Insira sua nota do ENEM:</label>
+      <input type="number" id="notaEnem" class="form-control" />
+      <button onclick="calcularMensalidade()" class="btn btn-amarelo mt-3">
+        <i class="fas fa-calculator"></i> Calcular Mensalidade
+      </button>
+      <div id="loading" style="display: none;"></div>
+      <p id="resultadoMensalidade"></p>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="resultadoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Resultado</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery, Popper.js, Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7HUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+  const cursosDisponiveis = [
+    { id: 1, nome: 'Administração', valorBase: 1155.24 },
+    { id: 2, nome: 'Análise e Desenvolvimento de Sistemas', valorBase: 1155.24 },
+    { id: 3, nome: 'Arquitetura e Urbanismo', valorBase: 1871.92 },
+    { id: 4, nome: 'Biomedicina', valorBase: 1572.92 },
+    { id: 5, nome: 'Ciência da Computação', valorBase: 1155.24 },
+    { id: 6, nome: 'Ciências Biológicas', valorBase: 1155.24 },
+    { id: 7, nome: 'Ciências Contábeis', valorBase: 1155.24 },
+    { id: 8, nome: 'Ciências Econômicas', valorBase: 1155.24 },
+    { id: 10, nome: 'Direito', valorBase: 1480.92 },
+    { id: 11, nome: 'Educação Física', valorBase: 1572.92 },
+    { id: 12, nome: 'Enfermagem', valorBase: 1572.92 },
+    { id: 14, nome: 'Engenharia Agronômica', valorBase: 1871.92 },
+    { id: 15, nome: 'Engenharia Civil', valorBase: 1871.92 },
+    { id: 16, nome: 'Engenharia de Produção', valorBase: 1871.92 },
+    { id: 17, nome: 'Engenharia Mecânica', valorBase: 1871.92 },
+    { id: 18, nome: 'Farmácia', valorBase: 1572.92 },
+    { id: 19, nome: 'Fisioterapia', valorBase: 1572.92 },
+    { id: 21, nome: 'Medicina Veterinária', valorBase: 2478.20 },
+    { id: 22, nome: 'Nutrição', valorBase: 1572.92 },
+    { id: 23, nome: 'Pedagogia', valorBase: 1046.68 },
+    { id: 24, nome: 'Psicologia', valorBase: 1572.92 },
+  ];
+
+  const cursoSelect = document.getElementById('cursos');
+  const calculadoraEnem = document.getElementById('calculadoraEnem');
+  const notaEnemInput = document.getElementById('notaEnem');
+  const resultadoMensalidade = document.getElementById('resultadoMensalidade');
+  const loadingSpinner = document.getElementById('loading');
+  const modal = document.getElementById('resultadoModal');
+
+  // Tabela de descontos atualizada
+  const tabelaDescontos = [
+    { notaMin: 300, notaMax: 499, desconto: 0.30 },
+    { notaMin: 500, notaMax: 699, desconto: 0.35 },
+    { notaMin: 700, notaMax: 799, desconto: 0.40 },
+    { notaMin: 800, notaMax: 1000, desconto: 0.50 },
+  ];
+
+  // Adiciona cursos ao seletor e define "Selecione o curso desejado" como placeholder
+  const placeholderOption = document.createElement('option');
+  placeholderOption.value = '';
+  placeholderOption.textContent = 'Selecione o curso desejado';
+  placeholderOption.disabled = true; // Desabilita a opção
+  placeholderOption.selected = true; // Define como selecionada por padrão
+  cursoSelect.appendChild(placeholderOption);
+
+  cursosDisponiveis.forEach(curso => {
+    const option = document.createElement('option');
+    option.value = curso.id;
+    option.textContent = curso.nome;
+    cursoSelect.appendChild(option);
+  });
+
+  cursoSelect.addEventListener('change', function () {
+    // Limpar o resultado e mostrar novamente os campos de entrada
+    limparResultado();
+    calculadoraEnem.style.display = 'block';
+  });
+
+  window.calcularMensalidade = function () {
+    const cursoSelecionado = cursosDisponiveis.find(curso => curso.id === parseInt(cursoSelect.value));
+    const notaEnem = parseInt(notaEnemInput.value) || 0;
+
+    // Procura o desconto na tabela com base na nota do ENEM
+    const desconto = encontrarDesconto(notaEnem);
+
+    // Oculta inputs e botão
+    ocultarElementos();
+
+    // Exibe spinner de carregamento
+    loadingSpinner.style.display = 'block';
+
+    // Simula o tempo de processamento com um setTimeout
+    setTimeout(function () {
+        // Lógica para calcular a mensalidade com base na nota do ENEM e desconto
+        const valorBase = cursoSelecionado.valorBase;
+        const valorComDesconto = valorBase * (1 - desconto);
+
+        // Esconde a calculadoraEnem antes de mostrar a modal
+        calculadoraEnem.style.display = 'none';
+
+        // Exibe a mensagem de resultado
+        exibirResultadoModal(notaEnem, desconto, valorComDesconto);
+    }, 2500);
+  };
+
+  function ocultarElementos() {
+    notaEnemInput.style.display = 'none';
+    document.querySelector('label[for="notaEnem"]').style.display = 'none';
+    document.querySelector('button').style.display = 'none';
+  }
+
+  function exibirResultadoModal(notaEnem, desconto, valorComDesconto) {
+    // Esconde o spinner
+    loadingSpinner.style.display = 'none';
+
+    // Encontra o modal
+    const modal = document.getElementById('resultadoModal');
+
+    // Verifica se o modal existe antes de tentar acessá-lo
+    if (modal) {
+      // Adiciona a classe modal-dialog-centered para centralizar
+      modal.querySelector('.modal-dialog').classList.add('modal-dialog-centered');
+
+      // Exibe a mensagem de resultado
+      if (desconto === 1.0) {
+        modal.querySelector('.modal-body').innerHTML = `<p><b>Parabéns, isso é incrível!!!</br></p><p>Você alcançou 100% de desconto em todo o curso!!</br> São poucas bolsas, então corra e feche sua matrícula!</br> <b>*Condição disponível enquanto houverem vagas disponíveis*</b> </p>`;
+      } else if (notaEnem < 300) {
+        modal.querySelector('.modal-body').innerHTML = `<p>Infelizmente a sua pontuação não foi suficiente para alcançar as bolsas!! Entre em contato com a sua consultora e veja as possibilidades.</p>`;
+      } else {
+        modal.querySelector('.modal-body').innerHTML = `<p><b>Parabéns!!!</b> Você pode conseguir ${desconto * 100}% de desconto em todo o curso!</br> Sua mensalidade pode ser de <b>R$${valorComDesconto.toFixed(2)}</b>! </br>São poucas bolsas, então corra e feche sua matrícula!</br> <b>*Condição disponível enquanto houverem vagas disponíveis*</b></p>`;
+      }
+
+      if (notaEnem > 1000) {
+        modal.querySelector('.modal-body').innerHTML = `<p>TENTE NOVAMENTE, PONTUAÇÃO INVÁLIDA!!!.</p>`;
+      }
+
+      // Mostra o modal
+      $(modal).modal('show');
+    } else {
+      console.error('O elemento do modal não foi encontrado.');
+    }
+  }
+
+  function encontrarDesconto(nota) {
+    // Encontra o desconto aplicável à nota do estudante
+    const descontoAplicavel = tabelaDescontos.find(item => nota >= item.notaMin && nota <= item.notaMax);
+
+    return descontoAplicavel ? descontoAplicavel.desconto : 0;
+  }
+
+  function limparResultado() {
+    // Mostrar novamente os campos de entrada e limpar a mensagem de resultado
+    notaEnemInput.style.display = 'block';
+    document.querySelector('label[for="notaEnem"]').style.display = 'block';
+    document.querySelector('button').style.display = 'block';
+    resultadoMensalidade.textContent = '';
+  }
+});
+  </script>
+</body>
+</html>
