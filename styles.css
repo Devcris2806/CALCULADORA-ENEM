@@ -1,0 +1,83 @@
+body {
+  background-color: #fdc300;
+  color: #0018ff;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+h1 {
+  color: #fdc300;
+}
+
+#cursoSelecao,
+#calculadoraEnem {
+  background-color: #0018ff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  width: 300px;
+  margin-top: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  color: #fdc300;
+}
+
+select,
+input {
+  width: calc(100% - 16px);
+  padding: 8px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+  display: block;
+  margin: 0 auto;
+}
+
+button.btn-amarelo {
+  background-color: #ffcc00; /* Cor amarela */
+  color: #0018ff;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  margin: 10px auto; /* Adicionado para centralizar o botão */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button.btn-amarelo:hover {
+  background-color: #f5ea27; /* Cor amarela mais clara no hover */
+  color: #0018ff; /* Cor azul */
+}
+
+#loading {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid #fdc300;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 15px;
+  animation: spin 2s linear infinite;
+  display: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#resultadoMensalidade {
+  font-weight: bold;
+  margin-top: 10px;
+  color: #fdc300;
+}
